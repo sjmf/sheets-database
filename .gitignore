@@ -1,0 +1,5 @@
+vendor/*
+secrets/*
+composer.phar
+loc.htm
+composer.lock
