@@ -19,7 +19,11 @@ function handle_tracker_post() {
     //echo ; // debug
     file_put_contents("loc.htm", file_get_contents("php://input"));
     $data = explode(',', $_POST['gps']);
+    array_pop($data);
     array_push($data, $_POST['vbat'], $_POST['vpc']);
+
+    // Data type conversion will be done automatically by sheets, using valueInputOption USER_ENTERED, but for reference:
+    // Cols: 1-2 (int) 3-8 (float) 9 (int) 10 (emptystring) 11-13 (float) 14 (empty) 15-16 (int) 17-18 (empty) 19 (int) 20 (empty) 21-22 (int)
     write_to_sheet($data);
     echo 'k'; // Due to a bug in Adafruit_FONA.cpp (line 2277) we must return a body of >1 byte long.
 }
@@ -31,9 +35,9 @@ function write_to_sheet($data) {
 
     // Write to Google Sheet
     // https://stackoverflow.com/a/60001963
-    $range = 'Sheet1!A:W';
+    $range = 'Sheet1!A:V';
     $body = new Google_Service_Sheets_ValueRange([ 'values' => [$data] ]);
-    $params = [ 'valueInputOption' => "RAW" ];
+    $params = [ 'valueInputOption' => "USER_ENTERED" ];
     $result = $service->spreadsheets_values->append($spreadsheetId, $range, $body, $params);
 }
 

@@ -12,12 +12,25 @@
     <div id="map" class="map"></div>
     <div id="info">&nbsp;</div>
     <script>
+      // Get URL GET params
+      // https://stackoverflow.com/questions/901115/
+      let urlparams = new URLSearchParams(window.location.search);
+      const params = new Proxy(urlparams, {
+            get: (searchParams, prop) => searchParams.get(prop),
+      });
+
+      // Construct URL parameters for date and set them in the search field
+      let now = new Date();
+      let date = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+
+      if(!params.from){ from = date; urlparams.set('from', from); }
+      if(!params.to)  { to = date+1; urlparams.set('to', to); }
+
+      window.history.replaceState( {} , document.title, window.location.href.split('?')[0] + '?' + urlparams + window.location.hash );
+
+
       var raster = new ol.layer.Tile({
           source: new ol.source.OSM()
-//        source: new ol.source.BingMaps({
-//          imagerySet: 'Aerial',
-//          key: 'Your Bing Maps Key from http://bingmapsportal.com/ here'
-//        })
       });
 
       var style = {
@@ -49,12 +62,24 @@
 
       var vector = new ol.layer.Vector({
         source: new ol.source.Vector({
-          url: 'gpx.php',
+          //url: 'filter.php?from=20220203&to=20220204',
+          url: 'filter.php?from=' + params.from + '&to=' + params.to,
           format: new ol.format.GPX()
         }),
         style: function(feature) {
           return style[feature.getGeometry().getType()];
         }
+      });
+
+      // First time the layer is rendered, 'addfeature' event will be called
+      vector.getSource().on('addfeature', function() {
+          map.getView().fit(vector.getSource().getExtent(), { padding: [40, 40, 40, 40] })
+      });
+      // From there on, 'propertychange' should be listened for 
+      vector.on('propertychange', function(evt) {
+          if (vector.getVisible() && vector.getSource().getExtent()[0] !== Infinity && vector.getSource().getExtent()[0] !== -Infinity) {
+              map.getView().fit(buffer(vector.getSource().getExtent(), 1000))
+          }
       });
 
       var map = new ol.Map({
@@ -98,6 +123,9 @@
       map.on('click', function(evt) {
         displayFeatureInfo(evt.pixel);
       });
+
+      //map.addControl(new ol.control.LayerSwitcher());
+
     </script>
   </body>
 </html>
