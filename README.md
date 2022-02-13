@@ -1,8 +1,13 @@
-# Sheets GPS Tracker
+# Sheets Database
 
 Ever wondered if you could use Google Sheets as a datastore for stuff?
 
 Ever wondered if you could use it as a backing datastore for a GPS tracker?
+
+## Example code repo
+
+The example code in this repo demonstrates how to read/write from a Google Sheet,
+and run a query using Filter(). The example use-case is of a GPS tracker.
 
 ## Why not to do it this way...
 
